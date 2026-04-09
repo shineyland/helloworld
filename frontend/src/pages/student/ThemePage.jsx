@@ -38,6 +38,23 @@ const StudentThemePage = () => {
     setPendingBackgroundImage('');
   };
 
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Check file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Image is too large. Please choose an image under 5MB.');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPendingBackgroundImage(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   return (
     <div className="space-y-8 max-w-4xl">
       {/* Theme Color Section */}
@@ -84,27 +101,24 @@ const StudentThemePage = () => {
           })}
         </div>
 
-        {/* Preview */}
-        <div className="mt-8 p-4 bg-gray-50 rounded-lg">
-          <p className="text-sm text-gray-600 mb-3">Preview:</p>
-          <div className="flex flex-wrap gap-3">
-            <div
-              className="px-4 py-2 rounded-lg text-white font-medium"
+        {/* Save button for theme color */}
+        {pendingTheme !== theme && (
+          <div className="mt-6 flex items-center gap-3">
+            <button
+              onClick={handleSave}
+              className="px-6 py-2 rounded-lg text-white font-medium transition-colors"
               style={{ backgroundColor: themeColors[pendingTheme].primary }}
             >
-              Primary Color
-            </div>
-            <div
-              className="px-4 py-2 rounded-lg font-medium"
-              style={{
-                backgroundColor: themeColors[pendingTheme].primaryLight,
-                color: themeColors[pendingTheme].primary
-              }}
-            >
-              Secondary Color
-            </div>
+              Save Changes
+            </button>
+            <span className="text-sm text-yellow-600 flex items-center gap-1">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              Unsaved changes
+            </span>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Avatar Color Section */}
@@ -141,21 +155,24 @@ const StudentThemePage = () => {
           })}
         </div>
 
-        {/* Avatar Preview */}
-        <div className="mt-8 p-4 bg-gray-50 rounded-lg">
-          <p className="text-sm text-gray-600 mb-3">Your avatar will look like this:</p>
-          <div className="flex items-center gap-4">
-            <div className={`w-16 h-16 rounded-full flex items-center justify-center ${avatarColors[pendingAvatarColor].bg}`}>
-              <span className={`text-2xl font-bold ${avatarColors[pendingAvatarColor].text}`}>
-                {user?.name?.charAt(0)?.toUpperCase() || 'U'}
-              </span>
-            </div>
-            <div>
-              <p className="font-medium text-gray-900">{user?.name || 'User'}</p>
-              <p className="text-sm text-gray-500">{user?.email || 'user@example.com'}</p>
-            </div>
+        {/* Save button for avatar color */}
+        {pendingAvatarColor !== avatarColor && (
+          <div className="mt-6 flex items-center gap-3">
+            <button
+              onClick={handleSave}
+              className="px-6 py-2 rounded-lg text-white font-medium transition-colors bg-primary"
+              style={{ backgroundColor: themeColors[pendingTheme].primary }}
+            >
+              Save Changes
+            </button>
+            <span className="text-sm text-yellow-600 flex items-center gap-1">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              Unsaved changes
+            </span>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Background Image Section */}
@@ -164,26 +181,53 @@ const StudentThemePage = () => {
         <p className="text-gray-600 mb-6">Add a custom background image that appears on every page.</p>
 
         <div className="space-y-4">
+          {/* Upload from device */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Image URL</label>
-            <div className="flex gap-3">
-              <input
-                type="url"
-                value={pendingBackgroundImage}
-                onChange={(e) => setPendingBackgroundImage(e.target.value)}
-                placeholder="https://example.com/image.jpg"
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
+            <label className="block text-sm font-medium text-gray-700 mb-2">Upload from Device</label>
+            <div className="flex gap-3 items-center">
+              <label className="cursor-pointer px-4 py-2 bg-primary text-white rounded-lg hover:opacity-90 transition-opacity font-medium flex items-center gap-2"
+                style={{ backgroundColor: themeColors[pendingTheme].primary }}>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                Choose Image
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+              </label>
               {pendingBackgroundImage && (
                 <button
                   onClick={handleRemoveBackground}
-                  className="px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors"
+                  className="px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors font-medium"
                 >
                   Remove
                 </button>
               )}
             </div>
-            <p className="text-xs text-gray-500 mt-1">Paste a URL to an image (JPG, PNG, or WebP)</p>
+            <p className="text-xs text-gray-500 mt-1">Select an image from your device (max 5MB)</p>
+          </div>
+
+          {/* Or use URL */}
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-200"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-white text-gray-500">or paste a URL</span>
+            </div>
+          </div>
+
+          <div>
+            <input
+              type="url"
+              value={pendingBackgroundImage.startsWith('data:') ? '' : pendingBackgroundImage}
+              onChange={(e) => setPendingBackgroundImage(e.target.value)}
+              placeholder="https://example.com/image.jpg"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
           </div>
 
           {/* Background Preview */}
@@ -202,24 +246,34 @@ const StudentThemePage = () => {
               </div>
             </div>
           )}
-        </div>
-      </div>
 
-      {/* Save and Reset Section */}
-      <div className={`card ${hasChanges ? 'bg-yellow-50 border-2 border-yellow-300' : 'bg-gray-50'}`}>
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="font-medium text-gray-900">Save Changes</h3>
-            {hasChanges ? (
-              <p className="text-sm text-yellow-700 font-medium flex items-center gap-1">
+          {/* Save button for background image */}
+          {pendingBackgroundImage !== backgroundImage && (
+            <div className="mt-4 flex items-center gap-3">
+              <button
+                onClick={handleSave}
+                className="px-6 py-2 rounded-lg text-white font-medium transition-colors"
+                style={{ backgroundColor: themeColors[pendingTheme].primary }}
+              >
+                Save Changes
+              </button>
+              <span className="text-sm text-yellow-600 flex items-center gap-1">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
-                Remember to save your changes!
-              </p>
-            ) : (
-              <p className="text-sm text-gray-600">All changes are saved.</p>
-            )}
+                Unsaved changes
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Reset Section */}
+      <div className="card bg-gray-50">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="font-medium text-gray-900">Reset Theme</h3>
+            <p className="text-sm text-gray-600">Reset all theme settings to default values.</p>
           </div>
           <div className="flex items-center gap-3">
             {saved && (
@@ -235,18 +289,6 @@ const StudentThemePage = () => {
               className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium"
             >
               Reset to Default
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={!hasChanges}
-              className={`px-6 py-2 rounded-lg font-medium transition-colors ${
-                hasChanges
-                  ? 'bg-primary text-white hover:bg-primary-hover'
-                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              }`}
-              style={hasChanges ? { backgroundColor: themeColors[pendingTheme].primary } : {}}
-            >
-              Save Changes
             </button>
           </div>
         </div>
