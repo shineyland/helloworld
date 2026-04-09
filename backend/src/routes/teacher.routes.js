@@ -4,6 +4,7 @@ import { isTeacher } from '../middleware/rbac.js';
 import * as assignmentController from '../controllers/assignment.controller.js';
 import * as attendanceController from '../controllers/attendance.controller.js';
 import * as classController from '../controllers/class.controller.js';
+import * as userController from '../controllers/user.controller.js';
 
 const router = Router();
 
@@ -19,6 +20,13 @@ router.get('/dashboard', (req, res) => {
 router.get('/classes', classController.getMyClasses);
 router.get('/classes/:id', classController.getClassDetails);
 router.get('/classes/:id/roster', classController.getClassRoster);
+
+// Student management
+router.get('/students', userController.getAllStudentsForTeacher);
+router.get('/students/:id', userController.getStudentProfileForTeacher);
+router.patch('/students/:id/suspend', userController.suspendStudent);
+router.patch('/students/:id/activate', userController.activateStudent);
+router.patch('/students/:id/reset-password', userController.resetStudentPasswordByTeacher);
 
 // Assignments
 router.get('/assignments', assignmentController.listTeacherAssignments);
