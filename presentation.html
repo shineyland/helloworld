@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>School Management System - Architecture Overview</title>
+
+    <!-- Fonts: Clash Display + Satoshi from Fontshare -->
+    <link href="https://api.fontshare.com/v2/css?f[]=clash-display@700,600,500&f[]=satoshi@400,500,700&display=swap" rel="stylesheet">
+
+    <style>
+        /* ===========================================
+           CSS CUSTOM PROPERTIES (NEON CYBER THEME)
+           =========================================== */
+        :root {
+            /* Colors — Futuristic cyber aesthetic */
+            --bg-primary: #0a0f1c;
+            --bg-secondary: #111827;
+            --bg-card: #1a1f2e;
+            --text-primary: #ffffff;
+            --text-secondary: #9ca3af;
+            --accent-cyan: #00ffcc;
+            --accent-magenta: #ff00aa;
+            --accent-blue: #4361ee;
+            --accent-glow: rgba(0, 255, 204, 0.3);
+            --grid-color: rgba(0, 255, 204, 0.05);
+
+            /* Typography — MUST use clamp() */
+            --font-display: "Clash Display", sans-serif;
+            --font-body: "Satoshi", sans-serif;
+            --title-size: clamp(2rem, 6vw, 4.5rem);
+            --h2-size: clamp(1.5rem, 4vw, 3rem);
+            --h3-size: clamp(1rem, 2.5vw, 1.5rem);
+            --subtitle-size: clamp(0.875rem, 2vw, 1.25rem);
+            --body-size: clamp(0.75rem, 1.2vw, 1rem);
+            --small-size: clamp(0.65rem, 1vw, 0.875rem);
+            --code-size: clamp(0.6rem, 1vw, 0.8rem);
+
+            /* Spacing — MUST use clamp() */
+            --slide-padding: clamp(1.5rem, 4vw, 4rem);
+            --content-gap: clamp(1rem, 2vw, 2rem);
+
+            /* Animation */
+            --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+            --duration-normal: 0.6s;
+        }
+
+        /* ===========================================
+           BASE STYLES
+           =========================================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* ===========================================
+           VIEWPORT FITTING: MANDATORY BASE STYLES
+           =========================================== */
+        html, body {
+            height: 100%;
+            overflow-x: hidden;
+            font-family: var(--font-body);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        html {
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+        }
+
+        .slide {
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
+            scroll-snap-align: start;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            background: var(--bg-primary);
+        }
+
+        .slide-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            max-height: 100%;
+            overflow: hidden;
+            padding: var(--slide-padding);
+        }
+
+        /* ===========================================
+           GRID BACKGROUND PATTERN
+           =========================================== */
+        .slide::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(var(--grid-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+        }
+
+        /* ===========================================
+           TYPOGRAPHY
+           =========================================== */
+        h1 {
+            font-family: var(--font-display);
+            font-size: var(--title-size);
+            font-weight: 700;
+            line-height: 1.1;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-cyan) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        h2 {
+            font-family: var(--font-display);
+            font-size: var(--h2-size);
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: clamp(0.5rem, 2vw, 1.5rem);
+        }
+
+        h3 {
+            font-family: var(--font-display);
+            font-size: var(--h3-size);
+            font-weight: 500;
+            color: var(--accent-cyan);
+        }
+
+        p {
+            font-size: var(--body-size);
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .subtitle {
+            font-size: var(--subtitle-size);
+            color: var(--accent-cyan);
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            margin-bottom: clamp(0.5rem, 1vw, 1rem);
+        }
+
+        /* ===========================================
+           SLIDE LAYOUTS
+           =========================================== */
+        .title-slide .slide-content {
+            align-items: center;
+            text-align: center;
+        }
+
+        .title-slide h1 {
+            margin-bottom: clamp(1rem, 2vw, 2rem);
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: clamp(1rem, 3vw, 3rem);
+            align-items: center;
+        }
+
+        @media (max-width: 768px) {
+            .two-column {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ===========================================
+           CARDS & CONTAINERS
+           =========================================== */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid rgba(0, 255, 204, 0.1);
+            border-radius: 12px;
+            padding: clamp(1rem, 2vw, 1.5rem);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-magenta));
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: clamp(0.5rem, 1.5vw, 1rem);
+        }
+
+        @media (max-width: 768px) {
+            .feature-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .feature-item {
+            background: var(--bg-card);
+            border: 1px solid rgba(0, 255, 204, 0.1);
+            border-radius: 8px;
+            padding: clamp(0.75rem, 1.5vw, 1.25rem);
+            text-align: center;
+        }
+
+        .feature-item h3 {
+            font-size: var(--small-size);
+            margin-bottom: 0.25rem;
+        }
+
+        .feature-item p {
+            font-size: var(--small-size);
+        }
+
+        /* ===========================================
+           CODE BLOCKS
+           =========================================== */
+        .code-block {
+            background: #0d1117;
+            border: 1px solid rgba(0, 255, 204, 0.2);
+            border-radius: 8px;
+            padding: clamp(0.75rem, 1.5vw, 1rem);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: var(--code-size);
+            overflow-x: auto;
+            white-space: pre;
+            color: var(--text-secondary);
+        }
+
+        .code-block .keyword { color: #ff79c6; }
+        .code-block .string { color: #50fa7b; }
+        .code-block .comment { color: #6272a4; }
+        .code-block .function { color: #8be9fd; }
+
+        /* ===========================================
+           ARCHITECTURE DIAGRAM
+           =========================================== */
+        .arch-diagram {
+            display: flex;
+            flex-direction: column;
+            gap: clamp(0.5rem, 1vw, 1rem);
+            max-width: 100%;
+        }
+
+        .arch-layer {
+            background: var(--bg-card);
+            border: 1px solid rgba(0, 255, 204, 0.2);
+            border-radius: 8px;
+            padding: clamp(0.5rem, 1vw, 1rem);
+            text-align: center;
+        }
+
+        .arch-layer.frontend { border-color: var(--accent-cyan); }
+        .arch-layer.backend { border-color: var(--accent-magenta); }
+        .arch-layer.database { border-color: var(--accent-blue); }
+
+        .arch-layer h3 {
+            font-size: var(--small-size);
+            margin-bottom: 0.25rem;
+        }
+
+        .arch-layer p {
+            font-size: var(--small-size);
+        }
+
+        .arch-arrow {
+            text-align: center;
+            color: var(--accent-cyan);
+            font-size: clamp(1rem, 2vw, 1.5rem);
+        }
+
+        /* ===========================================
+           TABLES
+           =========================================== */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: var(--small-size);
+        }
+
+        th, td {
+            padding: clamp(0.25rem, 0.5vw, 0.5rem) clamp(0.5rem, 1vw, 1rem);
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        th {
+            background: var(--bg-card);
+            color: var(--accent-cyan);
+            font-weight: 600;
+        }
+
+        /* ===========================================
+           FLOW DIAGRAM
+           =========================================== */
+        .flow-steps {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: clamp(0.25rem, 0.5vw, 0.5rem);
+            flex-wrap: wrap;
+        }
+
+        .flow-step {
+            background: var(--bg-card);
+            border: 1px solid rgba(0, 255, 204, 0.2);
+            border-radius: 8px;
+            padding: clamp(0.5rem, 1vw, 1rem);
+            text-align: center;
+            min-width: clamp(60px, 10vw, 100px);
+        }
+
+        .flow-step span {
+            font-size: var(--small-size);
+            color: var(--text-secondary);
+        }
+
+        .flow-arrow {
+            color: var(--accent-cyan);
+            font-size: clamp(0.75rem, 1.5vw, 1.25rem);
+        }
+
+        /* ===========================================
+           BADGES & TAGS
+           =========================================== */
+        .badge {
+            display: inline-block;
+            padding: 0.25em 0.75em;
+            border-radius: 20px;
+            font-size: var(--small-size);
+            font-weight: 500;
+        }
+
+        .badge-cyan { background: rgba(0, 255, 204, 0.2); color: var(--accent-cyan); }
+        .badge-magenta { background: rgba(255, 0, 170, 0.2); color: var(--accent-magenta); }
+        .badge-blue { background: rgba(67, 97, 238, 0.2); color: var(--accent-blue); }
+
+        /* ===========================================
+           BULLET LISTS
+           =========================================== */
+        .bullet-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .bullet-list li {
+            font-size: var(--body-size);
+            color: var(--text-secondary);
+            padding-left: 1.5em;
+            position: relative;
+            margin-bottom: clamp(0.25rem, 0.5vw, 0.5rem);
+        }
+
+        .bullet-list li::before {
+            content: '▸';
+            position: absolute;
+            left: 0;
+            color: var(--accent-cyan);
+        }
+
+        /* ===========================================
+           ANIMATIONS
+           =========================================== */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition:
+                opacity var(--duration-normal) var(--ease-out-expo),
+                transform var(--duration-normal) var(--ease-out-expo);
+        }
+
+        .slide.visible .reveal {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .reveal:nth-child(1) { transition-delay: 0.1s; }
+        .reveal:nth-child(2) { transition-delay: 0.2s; }
+        .reveal:nth-child(3) { transition-delay: 0.3s; }
+        .reveal:nth-child(4) { transition-delay: 0.4s; }
+        .reveal:nth-child(5) { transition-delay: 0.5s; }
+
+        /* Glow effect for titles */
+        @keyframes glow {
+            0%, 100% { text-shadow: 0 0 20px var(--accent-glow); }
+            50% { text-shadow: 0 0 40px var(--accent-glow), 0 0 60px var(--accent-glow); }
+        }
+
+        .glow {
+            animation: glow 3s ease-in-out infinite;
+        }
+
+        /* ===========================================
+           PROGRESS BAR
+           =========================================== */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-magenta));
+            z-index: 1000;
+            transition: width 0.3s ease;
+        }
+
+        /* ===========================================
+           NAVIGATION DOTS
+           =========================================== */
+        .nav-dots {
+            position: fixed;
+            right: clamp(1rem, 2vw, 2rem);
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            z-index: 1000;
+        }
+
+        .nav-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .nav-dot:hover {
+            background: var(--accent-cyan);
+            transform: scale(1.2);
+        }
+
+        .nav-dot.active {
+            background: var(--accent-cyan);
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        /* ===========================================
+           SLIDE NUMBER
+           =========================================== */
+        .slide-number {
+            position: absolute;
+            bottom: clamp(1rem, 2vw, 2rem);
+            right: clamp(1rem, 2vw, 2rem);
+            font-family: var(--font-display);
+            font-size: var(--small-size);
+            color: var(--text-secondary);
+        }
+
+        /* ===========================================
+           RESPONSIVE BREAKPOINTS
+           =========================================== */
+        @media (max-height: 700px) {
+            :root {
+                --slide-padding: clamp(0.75rem, 3vw, 2rem);
+                --content-gap: clamp(0.4rem, 1.5vw, 1rem);
+                --title-size: clamp(1.25rem, 4.5vw, 2.5rem);
+                --h2-size: clamp(1rem, 3vw, 1.75rem);
+            }
+        }
+
+        @media (max-height: 600px) {
+            :root {
+                --slide-padding: clamp(0.5rem, 2.5vw, 1.5rem);
+                --content-gap: clamp(0.3rem, 1vw, 0.75rem);
+                --title-size: clamp(1.1rem, 4vw, 2rem);
+                --body-size: clamp(0.7rem, 1.2vw, 0.95rem);
+            }
+
+            .nav-dots {
+                display: none;
+            }
+        }
+
+        @media (max-height: 500px) {
+            :root {
+                --slide-padding: clamp(0.4rem, 2vw, 1rem);
+                --title-size: clamp(1rem, 3.5vw, 1.5rem);
+                --h2-size: clamp(0.9rem, 2.5vw, 1.25rem);
+                --body-size: clamp(0.65rem, 1vw, 0.85rem);
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.2s !important;
+            }
+            html {
+                scroll-behavior: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Progress Bar -->
+    <div class="progress-bar" id="progressBar"></div>
+
+    <!-- Navigation Dots -->
+    <nav class="nav-dots" id="navDots"></nav>
+
+    <!-- ===========================================
+         SLIDE 1: TITLE
+         =========================================== -->
+    <section class="slide title-slide">
+        <div class="slide-content">
+            <p class="subtitle reveal">System Architecture</p>
+            <h1 class="reveal glow">School Management System</h1>
+            <p class="reveal" style="max-width: 600px;">
+                A full-stack web application with role-based dashboards for administrators, teachers, and students.
+            </p>
+            <div class="reveal" style="margin-top: clamp(1rem, 2vw, 2rem); display: flex; gap: 1rem;">
+                <span class="badge badge-cyan">React</span>
+                <span class="badge badge-magenta">Node.js</span>
+                <span class="badge badge-blue">PostgreSQL</span>
+            </div>
+        </div>
+        <span class="slide-number">01 / 12</span>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 2: SYSTEM OVERVIEW
+         =========================================== -->
+    <section class="slide">
+        <div class="slide-content">
+            <h2 class="reveal">System Overview</h2>
+            <div class="two-column">
+                <div class="reveal">
+                    <h3 style="margin-bottom: 1rem;">Key Features</h3>
+                    <ul class="bullet-list">
+                        <li>JWT Authentication with refresh tokens</li>
+                        <li>Role-based access control (RBAC)</li>
+                        <li>Three distinct user dashboards</li>
+                        <li>Assignment & grading system</li>
+                        <li>Attendance tracking</li>
+                        <li>Announcements system</li>
+                    </ul>
+                </div>
+                <div class="arch-diagram reveal">
+                    <div class="arch-layer frontend">
+                        <h3>Frontend</h3>
+                        <p>React + Vite + Tailwind</p>
+                    </div>
+                    <div class="arch-arrow">↓</div>
+                    <div class="arch-layer backend">
+                        <h3>Backend</h3>
+                        <p>Node.js + Express</p>
+                    </div>
+                    <div class="arch-arrow">↓</div>
+                    <div class="arch-layer database">
+                        <h3>Database</h3>
+                        <p>PostgreSQL</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <span class="slide-number">02 / 12</span>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 3: TECHNOLOGY STACK
+         =========================================== -->
+    <section class="slide">
+        <div class="slide-content">
+            <h2 class="reveal">Technology Stack</h2>
+            <div class="two-column">
+                <div class="card reveal">
+                    <h3 style="margin-bottom: 0.75rem;">Frontend</h3>
+                    <div class="table-container">
+                        <table>
+                            <tr><td>React 18</td><td>UI Library</td></tr>
+                            <tr><td>Vite</td><td>Build Tool</td></tr>
+                            <tr><td>Tailwind CSS</td><td>Styling</td></tr>
+                            <tr><td>React Router</td><td>Routing</td></tr>
+                            <tr><td>Axios</td><td>HTTP Client</td></tr>
+                        </table>
+                    </div>
+                </div>
+                <div class="card reveal">
+                    <h3 style="margin-bottom: 0.75rem;">Backend</h3>
+                    <div class="table-container">
+                        <table>
+                            <tr><td>Node.js</td><td>Runtime</td></tr>
+                            <tr><td>Express.js</td><td>Web Framework</td></tr>
+                            <tr><td>PostgreSQL</td><td>Database</td></tr>
+                            <tr><td>JWT</td><td>Authentication</td></tr>
+                            <tr><td>bcrypt</td><td>Password Hashing</td></tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <span class="slide-number">03 / 12</span>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 4: DATABASE SCHEMA
+         =========================================== -->
+    <section class="slide">
+        <div class="slide-content">
+            <h2 class="reveal">Database Schema</h2>
+            <p class="reveal" style="margin-bottom: 1rem;">Core tables and relationships</p>
+            <div class="feature-grid reveal">
+                <div class="feature-item">
+                    <h3>users</h3>
+                    <p>Base authentication</p>
+                </div>
+                <div class="feature-item">
+                    <h3>teachers</h3>
+                    <p>Teacher profiles</p>
+                </div>
+                <div class="feature-item">
+                    <h3>students</h3>
+                    <p>Student profiles</p>
+                </div>
+                <div class="feature-item">
+                    <h3>classes</h3>
+                    <p>Class sections</p>
+                </div>
+                <div class="feature-item">
+                    <h3>assignments</h3>
+                    <p>Homework/projects</p>
+                </div>
+                <div class="feature-item">
+                    <h3>submissions</h3>
+                    <p>Student work</p>
+                </div>
+                <div class="feature-item">
+                    <h3>grades</h3>
+                    <p>Scores & feedback</p>
+                </div>
+                <div class="feature-item">
+                    <h3>attendance</h3>
+                    <p>Daily records</p>
+                </div>
+                <div class="feature-item">
+                    <h3>announcements</h3>
+                    <p>System messages</p>
+                </div>
+            </div>
+        </div>
+        <span class="slide-number">04 / 12</span>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 5: AUTHENTICATION FLOW
+         =========================================== -->
+    <section class="slide">
+        <div class="slide-content">
+            <h2 class="reveal">Authentication Flow</h2>
+            <div class="two-column">
+                <div class="reveal">
+                    <h3 style="margin-bottom: 0.75rem;">Token Strategy</h3>
+                    <div class="card" style="margin-bottom: 1rem;">
+                        <p><strong style="color: var(--accent-cyan);">Access Token</strong></p>
+                        <p>15 min lifetime • Stored in memory</p>
+                    </div>
+                    <div class="card">
+                        <p><strong style="color: var(--accent-magenta);">Refresh Token</strong></p>
+                        <p>7 day lifetime • HTTP-only cookie</p>
+                    </div>
+                </div>
+                <div class="reveal">
+                    <h3 style="margin-bottom: 0.75rem;">Login Flow</h3>
+                    <div class="flow-steps" style="flex-direction: column; align-items: flex-start;">
+                        <div class="flow-step"><span>1. User enters credentials</span></div>
+                        <div class="flow-step"><span>2. Server validates & generates tokens</span></div>
+                        <div class="flow-step"><span>3. Access token sent in response</span></div>
+                        <div class="flow-step"><span>4. Refresh token set as cookie</span></div>
+                        <div class="flow-step"><span>5. Redirect to role dashboard</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <span class="slide-number">05 / 12</span>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 6: API ENDPOINTS - AUTH
+         =========================================== -->
+    <section class="slide">
+        <div class="slide-content">
+            <h2 class="reveal">API Design</h2>
+            <p class="subtitle reveal">Authentication Endpoints</p>
+            <div class="code-block reveal">
+<span class="keyword">POST</span>   /api/v1/auth/login        <span class="comment">→ Authenticate user</span>
+<span class="keyword">POST</span>   /api/v1/auth/logout       <span class="comment">→ Invalidate refresh token</span>
+<span class="keyword">POST</span>   /api/v1/auth/refresh      <span class="comment">→ Get new access token</span>
+<span class="keyword">GET</span>    /api/v1/auth/me           <span class="comment">→ Get current user [Auth]</span>
+<span class="keyword">PUT</span>    /api/v1/auth/change-password</div>
+        </div>
+        <span class="slide-number">06 / 12</span>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 7: API ENDPOINTS - ADMIN
+         =========================================== -->
+    <section class="slide">
+        <div class="slide-content">
+            <h2 class="reveal">API Design</h2>
+            <p class="subtitle reveal">Admin Endpoints</p>
+            <div class="code-block reveal">
+<span class="comment">// User Management</span>
+<span class="keyword">GET</span>    /api/v1/admin/users       <span class="comment">→ List all users</span>
+<span class="keyword">POST</span>   /api/v1/admin/users       <span class="comment">→ Create new user</span>
+<span class="keyword">DELETE</span> /api/v1/admin/users/:id   <span class="comment">→ Deactivate user</span>
+
+<span class="comment">// Class Management</span>
+<span class="keyword">GET</span>    /api/v1/admin/classes     <span class="comment">→ List all classes</span>
+<span class="keyword">POST</span>   /api/v1/admin/classes     <span class="comment">→ Create class</span>
+<span class="keyword">POST</span>   /api/v1/admin/classes/:id/enroll-students</div>
+        </div>
+        <span class="slide-number">07 / 12</span>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 8: API ENDPOINTS - TEACHER/STUDENT
+         =========================================== -->
+    <section class="slide">
+        <div class="slide-content">
+            <h2 class="reveal">API Design</h2>
+            <p class="subtitle reveal">Teacher & Student Endpoints</p>
+            <div class="two-column">
+                <div class="code-block reveal" style="font-size: var(--code-size);">
+<span class="comment">// Teacher</span>
+<span class="keyword">GET</span>  /teacher/classes
+<span class="keyword">POST</span> /teacher/assignments
+<span class="keyword">POST</span> /teacher/submissions/:id/grade
+<span class="keyword">POST</span> /teacher/classes/:id/attendance</div>
+                <div class="code-block reveal" style="font-size: var(--code-size);">
+<span class="comment">// Student</span>
+<span class="keyword">GET</span>  /student/assignments
+<span class="keyword">POST</span> /student/assignments/:id/submit
+<span class="keyword">GET</span>  /student/grades
+<span class="keyword">GET</span>  /student/schedule</div>
+            </div>
+        </div>
+        <span class="slide-number">08 / 12</span>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 9: FRONTEND ARCHITECTURE
+         =========================================== -->
+    <section class="slide">
+        <div class="slide-content">
+            <h2 class="reveal">Frontend Architecture</h2>
+            <div class="two-column">
+                <div class="reveal">
+                    <h3 style="margin-bottom: 0.75rem;">Component Tree</h3>
+                    <div class="code-block" style="font-size: var(--code-size);">
+App
+├── BrowserRouter
+│   └── AuthProvider
+│       └── Routes
+│           ├── /login → LoginPage
+│           ├── /admin/* → AdminDashboard
+│           ├── /teacher/* → TeacherDashboard
+│           └── /student/* → StudentDashboard</div>
+                </div>
+                <div class="reveal">
+                    <h3 style="margin-bottom: 0.75rem;">State Management</h3>
+                    <ul class="bullet-list">
+                        <li>AuthContext for user state</li>
+                        <li>Access token in memory</li>
+                        <li>Axios interceptors for refresh</li>
+                        <li>Role-based route guards</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <span class="slide-number">09 / 12</span>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 10: SECURITY
+         =========================================== -->
+    <section class="slide">
+        <div class="slide-content">
+            <h2 class="reveal">Security Layers</h2>
+            <div class="flow-steps reveal">
+                <div class="flow-step">
+                    <span>CORS</span>
+                </div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step">
+                    <span>Helmet</span>
+                </div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step">
+                    <span>Rate Limit</span>
+                </div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step">
+                    <span>JWT Auth</span>
+                </div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step">
+                    <span>RBAC</span>
+                </div>
+            </div>
+            <div class="feature-grid reveal" style="margin-top: clamp(1rem, 2vw, 2rem);">
+                <div class="feature-item">
+                    <h3>Passwords</h3>
+                    <p>bcrypt hashing</p>
+                </div>
+                <div class="feature-item">
+                    <h3>Tokens</h3>
+                    <p>HTTP-only cookies</p>
+                </div>
+                <div class="feature-item">
+                    <h3>API</h3>
+                    <p>100 req/15min limit</p>
+                </div>
+            </div>
+        </div>
+        <span class="slide-number">10 / 12</span>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 11: USER ROLES
+         =========================================== -->
+    <section class="slide">
+        <div class="slide-content">
+            <h2 class="reveal">Role-Based Dashboards</h2>
+            <div class="feature-grid reveal">
+                <div class="card" style="border-top-color: var(--accent-cyan);">
+                    <h3 style="color: var(--accent-cyan);">Admin</h3>
+                    <ul class="bullet-list" style="margin-top: 0.5rem;">
+                        <li>User management</li>
+                        <li>Class management</li>
+                        <li>Announcements</li>
+                        <li>Reports</li>
+                    </ul>
+                </div>
+                <div class="card" style="border-top-color: var(--accent-magenta);">
+                    <h3 style="color: var(--accent-magenta);">Teacher</h3>
+                    <ul class="bullet-list" style="margin-top: 0.5rem;">
+                        <li>Create assignments</li>
+                        <li>Grade submissions</li>
+                        <li>Track attendance</li>
+                        <li>View roster</li>
+                    </ul>
+                </div>
+                <div class="card" style="border-top-color: var(--accent-blue);">
+                    <h3 style="color: var(--accent-blue);">Student</h3>
+                    <ul class="bullet-list" style="margin-top: 0.5rem;">
+                        <li>Submit assignments</li>
+                        <li>View grades</li>
+                        <li>Check schedule</li>
+                        <li>Read announcements</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <span class="slide-number">11 / 12</span>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 12: CLOSING
+         =========================================== -->
+    <section class="slide title-slide">
+        <div class="slide-content">
+            <p class="subtitle reveal">Thank You</p>
+            <h1 class="reveal glow">Questions?</h1>
+            <div class="reveal" style="margin-top: clamp(1rem, 2vw, 2rem);">
+                <p style="margin-bottom: 0.5rem;">Repository</p>
+                <p style="color: var(--accent-cyan);">github.com/shineyland/helloworld</p>
+            </div>
+            <div class="reveal" style="margin-top: clamp(1rem, 2vw, 1.5rem); display: flex; gap: 1rem;">
+                <span class="badge badge-cyan">React</span>
+                <span class="badge badge-magenta">Express</span>
+                <span class="badge badge-blue">PostgreSQL</span>
+            </div>
+        </div>
+        <span class="slide-number">12 / 12</span>
+    </section>
+
+    <script>
+        /* ===========================================
+           SLIDE PRESENTATION CONTROLLER
+           =========================================== */
+        class SlidePresentation {
+            constructor() {
+                this.slides = document.querySelectorAll('.slide');
+                this.currentSlide = 0;
+                this.progressBar = document.getElementById('progressBar');
+                this.navDotsContainer = document.getElementById('navDots');
+
+                this.setupIntersectionObserver();
+                this.setupKeyboardNav();
+                this.setupTouchNav();
+                this.setupNavDots();
+                this.updateProgress();
+            }
+
+            setupIntersectionObserver() {
+                const options = {
+                    root: null,
+                    rootMargin: '0px',
+                    threshold: 0.5
+                };
+
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('visible');
+                            this.currentSlide = Array.from(this.slides).indexOf(entry.target);
+                            this.updateProgress();
+                            this.updateNavDots();
+                        }
+                    });
+                }, options);
+
+                this.slides.forEach(slide => observer.observe(slide));
+            }
+
+            setupKeyboardNav() {
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+                        e.preventDefault();
+                        this.nextSlide();
+                    } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft' || e.key === 'PageUp') {
+                        e.preventDefault();
+                        this.prevSlide();
+                    } else if (e.key === 'Home') {
+                        e.preventDefault();
+                        this.goToSlide(0);
+                    } else if (e.key === 'End') {
+                        e.preventDefault();
+                        this.goToSlide(this.slides.length - 1);
+                    }
+                });
+            }
+
+            setupTouchNav() {
+                let touchStartY = 0;
+                let touchEndY = 0;
+
+                document.addEventListener('touchstart', (e) => {
+                    touchStartY = e.changedTouches[0].screenY;
+                }, false);
+
+                document.addEventListener('touchend', (e) => {
+                    touchEndY = e.changedTouches[0].screenY;
+                    const diff = touchStartY - touchEndY;
+
+                    if (Math.abs(diff) > 50) {
+                        if (diff > 0) {
+                            this.nextSlide();
+                        } else {
+                            this.prevSlide();
+                        }
+                    }
+                }, false);
+            }
+
+            setupNavDots() {
+                this.navDotsContainer.innerHTML = '';
+                this.slides.forEach((_, index) => {
+                    const dot = document.createElement('button');
+                    dot.className = 'nav-dot' + (index === 0 ? ' active' : '');
+                    dot.setAttribute('aria-label', `Go to slide ${index + 1}`);
+                    dot.addEventListener('click', () => this.goToSlide(index));
+                    this.navDotsContainer.appendChild(dot);
+                });
+            }
+
+            updateNavDots() {
+                const dots = this.navDotsContainer.querySelectorAll('.nav-dot');
+                dots.forEach((dot, index) => {
+                    dot.classList.toggle('active', index === this.currentSlide);
+                });
+            }
+
+            updateProgress() {
+                const progress = ((this.currentSlide + 1) / this.slides.length) * 100;
+                this.progressBar.style.width = `${progress}%`;
+            }
+
+            nextSlide() {
+                if (this.currentSlide < this.slides.length - 1) {
+                    this.goToSlide(this.currentSlide + 1);
+                }
+            }
+
+            prevSlide() {
+                if (this.currentSlide > 0) {
+                    this.goToSlide(this.currentSlide - 1);
+                }
+            }
+
+            goToSlide(index) {
+                this.slides[index].scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        // Initialize presentation
+        new SlidePresentation();
+    </script>
+</body>
+</html>
