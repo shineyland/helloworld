@@ -36,6 +36,9 @@ const StudentThemePage = () => {
 
   const handleRemoveBackground = () => {
     setPendingBackgroundImage('');
+    setBackgroundImage('');
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
   };
 
   const handleFileUpload = (e) => {
