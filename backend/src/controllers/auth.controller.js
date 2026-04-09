@@ -13,6 +13,20 @@ export const login = async (req, res, next) => {
 
     const result = await authService.login(email, password);
 
+    // Block suspended / inactive users
+    if (
+      result?.user &&
+      (
+        result.user.isActive === false ||
+        result.user.status === 'suspended'
+      )
+    ) {
+      return res.status(403).json({
+        success: false,
+        error: 'Your account has been suspended. Please contact your teacher.'
+      });
+    }
+
     // Set refresh token in HTTP-only cookie
     res.cookie('refreshToken', result.refreshToken, {
       httpOnly: true,
@@ -45,6 +59,21 @@ export const refresh = async (req, res, next) => {
     }
 
     const result = await authService.refreshAccessToken(refreshToken);
+
+    // Optional extra safety check
+    if (
+      result?.user &&
+      (
+        result.user.isActive === false ||
+        result.user.status === 'suspended'
+      )
+    ) {
+      res.clearCookie('refreshToken');
+      return res.status(403).json({
+        success: false,
+        error: 'Your account has been suspended. Please contact your teacher.'
+      });
+    }
 
     // Set new refresh token in cookie
     res.cookie('refreshToken', result.refreshToken, {
@@ -83,6 +112,15 @@ export const logout = async (req, res, next) => {
 export const me = async (req, res, next) => {
   try {
     const user = await authService.getCurrentUser(req.user.sub);
+
+    // Optional extra safety check
+    if (user && (user.isActive === false || user.status === 'suspended')) {
+      return res.status(403).json({
+        success: false,
+        error: 'Your account has been suspended. Please contact your teacher.'
+      });
+    }
+
     res.json({
       success: true,
       data: user
