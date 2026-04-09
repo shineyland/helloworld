@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../../api/axios';
 
 const AdminDashboard = () => {
@@ -74,18 +75,18 @@ const AdminDashboard = () => {
         <div className="card">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
           <div className="space-y-3">
-            <a href="/admin/users" className="block p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+            <Link to="/admin/users" className="block p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
               <p className="font-medium text-gray-900">Add New User</p>
               <p className="text-sm text-gray-500">Create a new teacher or student account</p>
-            </a>
-            <a href="/admin/classes" className="block p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+            </Link>
+            <Link to="/admin/classes" className="block p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
               <p className="font-medium text-gray-900">Create Class</p>
               <p className="text-sm text-gray-500">Set up a new class and assign teachers</p>
-            </a>
-            <a href="/admin/announcements" className="block p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+            </Link>
+            <Link to="/admin/announcements" className="block p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
               <p className="font-medium text-gray-900">Post Announcement</p>
               <p className="text-sm text-gray-500">Send a message to all users</p>
-            </a>
+            </Link>
           </div>
         </div>
 

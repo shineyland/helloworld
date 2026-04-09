@@ -32,6 +32,7 @@ router.get('/classes/:id', classController.getClass);
 router.put('/classes/:id', classController.updateClass);
 router.delete('/classes/:id', classController.deleteClass);
 router.post('/classes/:id/assign-teacher', classController.assignTeacher);
+router.get('/classes/:id/roster', classController.getClassRoster);
 router.post('/classes/:id/enroll-students', classController.enrollStudents);
 router.delete('/classes/:id/students/:studentId', classController.removeStudent);
 
