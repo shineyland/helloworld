@@ -349,12 +349,27 @@ export const getStudentSchedule = async (req, res, next) => {
     }
 
     const result = await query(`
-      SELECT c.name, c.room_number, c.schedule, s.name as subject_name
+      SELECT
+        c.id,
+        c.name,
+        c.room_number,
+        c.schedule,
+        c.period_number,
+        c.start_time,
+        c.end_time,
+        c.grade_level,
+        c.is_advanced,
+        s.name as subject_name,
+        s.code as subject_code,
+        u.first_name as teacher_first_name,
+        u.last_name as teacher_last_name
       FROM class_students cs
       JOIN classes c ON cs.class_id = c.id
       LEFT JOIN subjects s ON c.subject_id = s.id
+      LEFT JOIN teachers t ON c.teacher_id = t.id
+      LEFT JOIN users u ON t.user_id = u.id
       WHERE cs.student_id = $1 AND cs.status = 'active' AND c.is_active = true
-      ORDER BY c.name
+      ORDER BY c.period_number, c.name
     `, [studentResult.rows[0].id]);
 
     res.json({
@@ -452,6 +467,39 @@ export const getCompletedAssignments = async (req, res, next) => {
       LEFT JOIN grades g ON sub.id = g.submission_id
       WHERE sub.student_id = $1
       ORDER BY sub.submitted_at DESC
+    `, [studentResult.rows[0].id]);
+
+    res.json({
+      success: true,
+      data: result.rows
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getOverdueAssignments = async (req, res, next) => {
+  try {
+    const studentResult = await query(
+      `SELECT id FROM students WHERE user_id = $1`,
+      [req.user.sub]
+    );
+
+    if (studentResult.rows.length === 0) {
+      return res.json({ success: true, data: [] });
+    }
+
+    const result = await query(`
+      SELECT a.*, c.name as class_name
+      FROM assignments a
+      JOIN classes c ON a.class_id = c.id
+      JOIN class_students cs ON c.id = cs.class_id
+      LEFT JOIN assignment_submissions sub ON a.id = sub.assignment_id AND sub.student_id = $1
+      WHERE cs.student_id = $1 AND cs.status = 'active'
+        AND a.is_published = true
+        AND sub.id IS NULL
+        AND a.due_date < NOW()
+      ORDER BY a.due_date DESC
     `, [studentResult.rows[0].id]);
 
     res.json({
@@ -601,6 +649,7 @@ export default {
   listStudentAssignments,
   getPendingAssignments,
   getCompletedAssignments,
+  getOverdueAssignments,
   getAssignmentForStudent,
   submitAssignment,
   updateSubmission

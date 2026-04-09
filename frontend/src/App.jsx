@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import DashboardLayout from './components/layout/DashboardLayout';
 
@@ -23,11 +24,14 @@ import StudentDashboard from './pages/student/DashboardPage';
 import StudentAssignmentsPage from './pages/student/AssignmentsPage';
 import StudentGradesPage from './pages/student/GradesPage';
 import StudentSchedulePage from './pages/student/SchedulePage';
+import StudentEnrollmentPage from './pages/student/EnrollmentPage';
+import StudentThemePage from './pages/student/ThemePage';
 
 function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <ThemeProvider>
         <Routes>
           {/* Public routes */}
           <Route path="/login" element={<LoginPage />} />
@@ -59,6 +63,8 @@ function App() {
               <Route path="/student/assignments" element={<StudentAssignmentsPage />} />
               <Route path="/student/grades" element={<StudentGradesPage />} />
               <Route path="/student/schedule" element={<StudentSchedulePage />} />
+              <Route path="/student/enrollment" element={<StudentEnrollmentPage />} />
+              <Route path="/student/theme" element={<StudentThemePage />} />
             </Route>
           </Route>
 
@@ -66,6 +72,7 @@ function App() {
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
+        </ThemeProvider>
       </AuthProvider>
     </BrowserRouter>
   );

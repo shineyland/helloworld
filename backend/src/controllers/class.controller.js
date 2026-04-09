@@ -388,6 +388,298 @@ export const getClassRoster = async (req, res, next) => {
   }
 };
 
+// Student: Get available classes for enrollment
+export const getAvailableClasses = async (req, res, next) => {
+  try {
+    const studentResult = await query(
+      `SELECT id, grade_level FROM students WHERE user_id = $1`,
+      [req.user.sub]
+    );
+
+    if (studentResult.rows.length === 0) {
+      return res.status(403).json({
+        success: false,
+        error: 'Student profile not found'
+      });
+    }
+
+    const studentId = studentResult.rows[0].id;
+    const studentGradeLevel = studentResult.rows[0].grade_level;
+
+    const result = await query(`
+      SELECT
+        c.id,
+        c.name,
+        c.grade_level,
+        c.section,
+        c.room_number,
+        c.schedule,
+        c.max_students,
+        c.is_advanced,
+        c.enrollment_test_required,
+        c.prerequisite_description,
+        s.name as subject_name,
+        s.code as subject_code,
+        s.credits,
+        u.first_name as teacher_first_name,
+        u.last_name as teacher_last_name,
+        t.department,
+        (SELECT COUNT(*) FROM class_students WHERE class_id = c.id AND status = 'active') as enrolled_count,
+        (SELECT passed FROM enrollment_test_results WHERE class_id = c.id AND student_id = $1) as test_passed
+      FROM classes c
+      LEFT JOIN subjects s ON c.subject_id = s.id
+      LEFT JOIN class_teachers ct ON c.id = ct.class_id AND ct.is_primary = true
+      LEFT JOIN teachers t ON ct.teacher_id = t.id
+      LEFT JOIN users u ON t.user_id = u.id
+      WHERE c.is_active = true
+        AND c.id NOT IN (
+          SELECT class_id FROM class_students
+          WHERE student_id = $1 AND status = 'active'
+        )
+      ORDER BY
+        CASE WHEN c.grade_level = $2 THEN 0 ELSE 1 END,
+        c.is_advanced,
+        s.name,
+        c.name
+    `, [studentId, studentGradeLevel]);
+
+    // Add recommendation flag
+    const classesWithRecommendation = result.rows.map(cls => ({
+      ...cls,
+      is_recommended: cls.grade_level === studentGradeLevel && !cls.is_advanced
+    }));
+
+    res.json({
+      success: true,
+      data: classesWithRecommendation,
+      studentGradeLevel
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Student: Get enrolled classes
+export const getEnrolledClasses = async (req, res, next) => {
+  try {
+    const studentResult = await query(
+      `SELECT id FROM students WHERE user_id = $1`,
+      [req.user.sub]
+    );
+
+    if (studentResult.rows.length === 0) {
+      return res.json({ success: true, data: [] });
+    }
+
+    const result = await query(`
+      SELECT
+        c.id,
+        c.name,
+        c.grade_level,
+        c.section,
+        c.room_number,
+        c.schedule,
+        s.name as subject_name,
+        s.code as subject_code,
+        s.credits,
+        u.first_name as teacher_first_name,
+        u.last_name as teacher_last_name,
+        t.department,
+        cs.enrolled_at,
+        cs.status
+      FROM class_students cs
+      JOIN classes c ON cs.class_id = c.id
+      LEFT JOIN subjects s ON c.subject_id = s.id
+      LEFT JOIN class_teachers ct ON c.id = ct.class_id AND ct.is_primary = true
+      LEFT JOIN teachers t ON ct.teacher_id = t.id
+      LEFT JOIN users u ON t.user_id = u.id
+      WHERE cs.student_id = $1 AND cs.status = 'active'
+      ORDER BY s.name, c.name
+    `, [studentResult.rows[0].id]);
+
+    res.json({
+      success: true,
+      data: result.rows
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Student: Enroll in a class
+export const enrollInClass = async (req, res, next) => {
+  try {
+    const { id: classId } = req.params;
+    const { confirmEnrollmentTest } = req.body;
+
+    const studentResult = await query(
+      `SELECT id FROM students WHERE user_id = $1`,
+      [req.user.sub]
+    );
+
+    if (studentResult.rows.length === 0) {
+      return res.status(403).json({
+        success: false,
+        error: 'Student profile not found'
+      });
+    }
+
+    const studentId = studentResult.rows[0].id;
+
+    // Check if class exists and is active
+    const classResult = await query(
+      `SELECT id, max_students, name, is_advanced, enrollment_test_required, prerequisite_description
+       FROM classes WHERE id = $1 AND is_active = true`,
+      [classId]
+    );
+
+    if (classResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'Class not found or not available'
+      });
+    }
+
+    const classInfo = classResult.rows[0];
+
+    // Check enrollment test requirement for advanced classes
+    if (classInfo.enrollment_test_required) {
+      if (!confirmEnrollmentTest) {
+        return res.status(400).json({
+          success: false,
+          error: 'This is an advanced class that requires passing an enrollment test',
+          requiresTestConfirmation: true,
+          prerequisiteDescription: classInfo.prerequisite_description
+        });
+      }
+
+      // Record that student confirmed passing the test
+      await query(`
+        INSERT INTO enrollment_test_results (class_id, student_id, passed, notes)
+        VALUES ($1, $2, true, 'Student confirmed passing enrollment test')
+        ON CONFLICT (class_id, student_id) DO UPDATE SET passed = true, test_date = NOW()
+      `, [classId, studentId]);
+    }
+
+    // Check current enrollment count
+    const enrollmentCount = await query(
+      `SELECT COUNT(*) as count FROM class_students WHERE class_id = $1 AND status = 'active'`,
+      [classId]
+    );
+
+    if (parseInt(enrollmentCount.rows[0].count) >= classInfo.max_students) {
+      return res.status(400).json({
+        success: false,
+        error: 'Class is full'
+      });
+    }
+
+    // Check if already enrolled
+    const existingEnrollment = await query(
+      `SELECT id, status FROM class_students WHERE class_id = $1 AND student_id = $2`,
+      [classId, studentId]
+    );
+
+    if (existingEnrollment.rows.length > 0) {
+      if (existingEnrollment.rows[0].status === 'active') {
+        return res.status(400).json({
+          success: false,
+          error: 'Already enrolled in this class'
+        });
+      }
+      // Re-enroll if previously withdrawn
+      await query(
+        `UPDATE class_students SET status = 'active', enrolled_at = NOW() WHERE class_id = $1 AND student_id = $2`,
+        [classId, studentId]
+      );
+    } else {
+      // Create new enrollment
+      await query(
+        `INSERT INTO class_students (class_id, student_id, status) VALUES ($1, $2, 'active')`,
+        [classId, studentId]
+      );
+    }
+
+    res.status(201).json({
+      success: true,
+      message: `Successfully enrolled in ${classInfo.name}`
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Student: Update profile (grade level, date of birth)
+export const updateStudentProfile = async (req, res, next) => {
+  try {
+    const { gradeLevel, dateOfBirth } = req.body;
+
+    const result = await query(
+      `UPDATE students
+       SET grade_level = COALESCE($1, grade_level),
+           date_of_birth = COALESCE($2, date_of_birth)
+       WHERE user_id = $3
+       RETURNING *`,
+      [gradeLevel, dateOfBirth, req.user.sub]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'Student profile not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: result.rows[0]
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Student: Withdraw from a class
+export const withdrawFromClass = async (req, res, next) => {
+  try {
+    const { id: classId } = req.params;
+
+    const studentResult = await query(
+      `SELECT id FROM students WHERE user_id = $1`,
+      [req.user.sub]
+    );
+
+    if (studentResult.rows.length === 0) {
+      return res.status(403).json({
+        success: false,
+        error: 'Student profile not found'
+      });
+    }
+
+    const result = await query(
+      `UPDATE class_students
+       SET status = 'withdrawn'
+       WHERE class_id = $1 AND student_id = $2 AND status = 'active'
+       RETURNING *`,
+      [classId, studentResult.rows[0].id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'Enrollment not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Successfully withdrawn from class'
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export default {
   listClasses,
   createClass,
@@ -401,5 +693,10 @@ export default {
   createSubject,
   getMyClasses,
   getClassDetails,
-  getClassRoster
+  getClassRoster,
+  getAvailableClasses,
+  getEnrolledClasses,
+  enrollInClass,
+  withdrawFromClass,
+  updateStudentProfile
 };

@@ -141,7 +141,7 @@ export const getCurrentUser = async (userId) => {
   }
 
   const user = result.rows[0];
-  return {
+  const userData = {
     id: user.id,
     email: user.email,
     role: user.role,
@@ -152,6 +152,32 @@ export const getCurrentUser = async (userId) => {
     profileImage: user.profile_image_url,
     createdAt: user.created_at
   };
+
+  // Fetch role-specific data
+  if (user.role === 'student') {
+    const studentResult = await query(
+      `SELECT student_id, enrollment_date, grade_level, date_of_birth FROM students WHERE user_id = $1`,
+      [userId]
+    );
+    if (studentResult.rows.length > 0) {
+      userData.studentId = studentResult.rows[0].student_id;
+      userData.enrollmentDate = studentResult.rows[0].enrollment_date;
+      userData.gradeLevel = studentResult.rows[0].grade_level;
+      userData.dateOfBirth = studentResult.rows[0].date_of_birth;
+    }
+  } else if (user.role === 'teacher') {
+    const teacherResult = await query(
+      `SELECT employee_id, department, hire_date FROM teachers WHERE user_id = $1`,
+      [userId]
+    );
+    if (teacherResult.rows.length > 0) {
+      userData.employeeId = teacherResult.rows[0].employee_id;
+      userData.department = teacherResult.rows[0].department;
+      userData.hireDate = teacherResult.rows[0].hire_date;
+    }
+  }
+
+  return userData;
 };
 
 export const changePassword = async (userId, currentPassword, newPassword) => {

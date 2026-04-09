@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+:root {
+  --color-primary: #2563eb;
+  --color-primary-hover: #1d4ed8;
+  --color-primary-light: #dbeafe;
+  --color-accent: #3b82f6;
+}
+
 @layer base {
   body {
     @apply bg-gray-50 text-gray-900;
@@ -12,7 +19,12 @@
   }
 
   .btn-primary {
-    @apply bg-blue-600 text-white hover:bg-blue-700;
+    background-color: var(--color-primary);
+    @apply text-white;
+  }
+
+  .btn-primary:hover {
+    background-color: var(--color-primary-hover);
   }
 
   .btn-secondary {
@@ -24,7 +36,12 @@
   }
 
   .input {
-    @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent;
+    @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent;
+    --tw-ring-color: var(--color-primary);
+  }
+
+  .input:focus {
+    --tw-ring-color: var(--color-primary);
   }
 
   .card {
@@ -36,6 +53,20 @@
   }
 
   .sidebar-link.active {
-    @apply bg-blue-50 text-blue-700 font-medium;
+    background-color: var(--color-primary-light);
+    color: var(--color-primary);
+    @apply font-medium;
+  }
+
+  .text-primary {
+    color: var(--color-primary);
+  }
+
+  .bg-primary {
+    background-color: var(--color-primary);
+  }
+
+  .bg-primary-light {
+    background-color: var(--color-primary-light);
   }
 }

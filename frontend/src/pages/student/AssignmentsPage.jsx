@@ -18,6 +18,7 @@ const StudentAssignmentsPage = () => {
     try {
       const endpoint = filter === 'pending' ? '/student/assignments/pending' :
                        filter === 'completed' ? '/student/assignments/completed' :
+                       filter === 'overdue' ? '/student/assignments/overdue' :
                        '/student/assignments';
       const response = await api.get(endpoint);
       setAssignments(response.data.data || []);
@@ -73,15 +74,15 @@ const StudentAssignmentsPage = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex gap-2">
-        {['all', 'pending', 'completed'].map((f) => (
+      <div className="flex gap-2 flex-wrap">
+        {['all', 'pending', 'completed', 'overdue'].map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               filter === f
-                ? 'bg-primary-600 text-white'
-                : 'bg-white text-gray-700 hover:bg-gray-100'
+                ? f === 'overdue' ? 'bg-red-600 text-white' : 'bg-blue-600 text-white'
+                : f === 'overdue' ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
             }`}
           >
             {f.charAt(0).toUpperCase() + f.slice(1)}
