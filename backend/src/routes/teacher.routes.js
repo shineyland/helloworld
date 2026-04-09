@@ -21,12 +21,8 @@ router.get('/classes', classController.getMyClasses);
 router.get('/classes/:id', classController.getClassDetails);
 router.get('/classes/:id/roster', classController.getClassRoster);
 
-// Student management
-router.get('/students', userController.getAllStudentsForTeacher);
-router.get('/students/:id', userController.getStudentProfileForTeacher);
-router.patch('/students/:id/suspend', userController.suspendStudent);
-router.patch('/students/:id/activate', userController.activateStudent);
-router.patch('/students/:id/reset-password', userController.resetStudentPasswordByTeacher);
+// Student management - use listStudents from user controller
+router.get('/students', userController.listStudents);
 
 // Assignments
 router.get('/assignments', assignmentController.listTeacherAssignments);
