@@ -59,15 +59,15 @@ const DashboardLayout = () => {
   const navLinks = getNavLinks();
 
   return (
-    <div className={`min-h-screen ${backgroundImage ? 'has-background-image' : 'bg-gray-100'}`}>
+    <div className={`min-h-screen ${backgroundImage ? 'has-background-image' : 'bg-gradient-to-br from-gray-50 to-gray-100'}`}>
       {/* Background Image Layer */}
       {backgroundImage && <div className="app-background" />}
 
       {/* Sidebar */}
-      <aside className="fixed inset-y-0 left-0 w-64 bg-white shadow-lg sidebar-bg">
+      <aside className="fixed inset-y-0 left-0 w-64 sidebar-bg shadow-xl">
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="h-16 flex items-center px-6 border-b border-gray-200">
+          <div className="h-16 flex items-center px-6 border-b border-white/20">
             <h1 className="text-xl font-bold logo-text">School MS</h1>
           </div>
 
@@ -116,7 +116,7 @@ const DashboardLayout = () => {
 
               {/* Avatar Dropdown Menu */}
               {isAvatarMenuOpen && (
-                <div className="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden z-50">
+                <div className="absolute bottom-full left-0 right-0 mb-2 bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/50 overflow-hidden z-50">
                   {/* My Account */}
                   <button
                     onClick={() => {
@@ -218,14 +218,14 @@ const DashboardLayout = () => {
       {isSignOutModalOpen && (
         <>
           <div
-            className="fixed inset-0 bg-black/50 z-40"
+            className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40"
             onClick={() => setIsSignOutModalOpen(false)}
           />
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-lg shadow-xl w-full max-w-sm">
+            <div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl w-full max-w-sm border border-white/50 animate-fade-in-up">
               <div className="p-6 text-center">
                 {/* Warning Icon */}
-                <div className="mx-auto w-20 h-20 rounded-full bg-red-100 flex items-center justify-center mb-4">
+                <div className="mx-auto w-20 h-20 rounded-full bg-gradient-to-br from-red-100 to-red-50 flex items-center justify-center mb-4 shadow-lg">
                   <svg className="w-10 h-10 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                   </svg>

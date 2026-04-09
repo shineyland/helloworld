@@ -28,17 +28,22 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="max-w-md w-full mx-4">
-        <div className="card">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 relative overflow-hidden">
+      {/* Decorative background elements */}
+      <div className="absolute top-0 left-0 w-96 h-96 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
+      <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+
+      <div className="max-w-md w-full mx-4 relative z-10">
+        <div className="card animate-fade-in-up">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">School Management</h1>
+            <h1 className="text-3xl font-bold logo-text">School Management</h1>
             <p className="text-gray-600 mt-2">Sign in to your account</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+              <div className="bg-red-50/80 backdrop-blur border border-red-200/50 text-red-700 px-4 py-3 rounded-xl shadow-sm">
                 {error}
               </div>
             )}
@@ -113,12 +118,12 @@ const LoginPage = () => {
             </button>
           </form>
 
-          <div className="mt-8 pt-6 border-t border-gray-200">
+          <div className="mt-8 pt-6 border-t border-white/30">
             <p className="text-sm text-gray-500 text-center">Demo Credentials:</p>
-            <div className="mt-2 text-xs text-gray-500 space-y-1">
-              <p>Admin: admin@school.com / admin123</p>
-              <p>Teacher: teacher@school.com / teacher123</p>
-              <p>Student: student@school.com / student123</p>
+            <div className="mt-3 p-4 rounded-xl bg-gray-50/50 backdrop-blur text-xs text-gray-600 space-y-2">
+              <p className="flex justify-between"><span className="font-medium">Admin:</span> admin@school.com / admin123</p>
+              <p className="flex justify-between"><span className="font-medium">Teacher:</span> teacher@school.com / teacher123</p>
+              <p className="flex justify-between"><span className="font-medium">Student:</span> student@school.com / student123</p>
             </div>
           </div>
         </div>
