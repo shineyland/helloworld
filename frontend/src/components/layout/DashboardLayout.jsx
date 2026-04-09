@@ -59,7 +59,7 @@ const DashboardLayout = () => {
   const navLinks = getNavLinks();
 
   return (
-    <div className={`min-h-screen ${backgroundImage ? 'has-background-image' : 'bg-gradient-to-br from-gray-50 to-gray-100'}`}>
+    <div className={`min-h-screen ${backgroundImage ? 'has-background-image' : 'bg-gradient-to-br from-orange-50/30 via-amber-50/20 to-yellow-50/30'}`}>
       {/* Background Image Layer */}
       {backgroundImage && <div className="app-background" />}
 

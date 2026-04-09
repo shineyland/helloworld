@@ -5,6 +5,7 @@ import * as assignmentController from '../controllers/assignment.controller.js';
 import * as attendanceController from '../controllers/attendance.controller.js';
 import * as classController from '../controllers/class.controller.js';
 import * as userController from '../controllers/user.controller.js';
+import * as announcementController from '../controllers/announcement.controller.js';
 
 const router = Router();
 
@@ -41,5 +42,9 @@ router.post('/submissions/:id/grade', assignmentController.gradeSubmission);
 router.get('/classes/:id/attendance', attendanceController.getClassAttendance);
 router.post('/classes/:id/attendance', attendanceController.recordAttendance);
 router.put('/attendance/:id', attendanceController.updateAttendance);
+
+// Announcements (teachers can create announcements for their classes)
+router.get('/announcements', announcementController.listAnnouncements);
+router.post('/announcements', announcementController.createAnnouncement);
 
 export default router;

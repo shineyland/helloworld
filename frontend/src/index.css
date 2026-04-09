@@ -7,10 +7,14 @@
   --color-primary-dark: #1d4ed8;
   --color-accent: #60a5fa;
   --background-image: none;
-  --glass-bg: rgba(255, 255, 255, 0.85);
-  --glass-border: rgba(255, 255, 255, 0.6);
-  --shadow-3d: 0 4px 20px rgba(0, 0, 0, 0.04), 0 1px 4px rgba(0, 0, 0, 0.02);
-  --shadow-3d-hover: 0 8px 30px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.03);
+  --glass-bg: rgba(255, 252, 250, 0.92);
+  --glass-border: rgba(255, 250, 245, 0.8);
+  --shadow-3d: 0 4px 20px rgba(180, 140, 100, 0.06), 0 1px 4px rgba(180, 140, 100, 0.03);
+  --shadow-3d-hover: 0 8px 30px rgba(180, 140, 100, 0.08), 0 2px 8px rgba(180, 140, 100, 0.04);
+  --warm-white: #fffcf9;
+  --warm-gray-50: #fdfbf9;
+  --warm-gray-100: #f9f6f3;
+  --warm-gray-200: #f3eeea;
 }
 
 /* Custom background image layer */
@@ -47,7 +51,8 @@
 
 @layer base {
   body {
-    @apply bg-gradient-to-br from-gray-50 to-gray-100 text-gray-900;
+    background: linear-gradient(135deg, #fffcf9 0%, #fdf8f4 50%, #faf5f0 100%);
+    @apply text-gray-800;
     min-height: 100vh;
   }
 }
@@ -82,15 +87,16 @@
   }
 
   .btn-secondary {
-    @apply bg-white text-gray-700;
+    background: rgba(255, 252, 249, 0.95);
+    @apply text-gray-700;
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(0, 0, 0, 0.06);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+    border: 1px solid rgba(200, 180, 160, 0.15);
+    box-shadow: 0 1px 3px rgba(180, 140, 100, 0.04);
   }
 
   .btn-secondary:hover {
-    @apply bg-gray-50;
-    border-color: rgba(0, 0, 0, 0.08);
+    background: #fffaf6;
+    border-color: rgba(200, 180, 160, 0.2);
   }
 
   .btn-danger {
@@ -103,46 +109,46 @@
     box-shadow: 0 4px 16px rgba(239, 68, 68, 0.25);
   }
 
-  /* Input with light glass effect */
+  /* Input with warm glass effect */
   .input {
     @apply w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent;
-    background: rgba(255, 255, 255, 0.95);
+    background: rgba(255, 252, 249, 0.98);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(0, 0, 0, 0.05);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02), inset 0 1px 2px rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(200, 180, 160, 0.12);
+    box-shadow: 0 1px 3px rgba(180, 140, 100, 0.03), inset 0 1px 2px rgba(255, 255, 255, 0.9);
     transition: all 0.3s ease;
   }
 
   .input:focus {
     --tw-ring-color: var(--color-primary);
     border-color: var(--color-accent);
-    background: #fff;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 0 0 3px rgba(59, 130, 246, 0.08);
+    background: #fffcfa;
+    box-shadow: 0 2px 8px rgba(180, 140, 100, 0.06), 0 0 0 3px rgba(59, 130, 246, 0.08);
   }
 
-  /* Glass Card with light 3D effect */
+  /* Glass Card with warm 3D effect */
   .card {
     @apply rounded-2xl p-6;
-    background: rgba(255, 255, 255, 0.92);
+    background: rgba(255, 253, 250, 0.95);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.8);
-    box-shadow: var(--shadow-3d), 0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+    border: 1px solid rgba(255, 248, 240, 0.9);
+    box-shadow: var(--shadow-3d), 0 0 0 1px rgba(255, 250, 245, 0.6) inset;
     transition: all 0.3s ease;
   }
 
   .card:hover {
-    box-shadow: var(--shadow-3d-hover), 0 0 0 1px rgba(255, 255, 255, 0.6) inset;
+    box-shadow: var(--shadow-3d-hover), 0 0 0 1px rgba(255, 252, 248, 0.7) inset;
     transform: translateY(-1px);
   }
 
-  /* Sidebar styles with light glass */
+  /* Sidebar styles with warm glass */
   .sidebar-bg {
-    background: rgba(255, 255, 255, 0.95);
+    background: rgba(255, 253, 250, 0.97);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border-right: 1px solid rgba(0, 0, 0, 0.04);
+    border-right: 1px solid rgba(200, 180, 160, 0.08);
   }
 
   .sidebar-link {
@@ -151,12 +157,12 @@
   }
 
   .sidebar-link:hover {
-    background: rgba(0, 0, 0, 0.03);
+    background: rgba(255, 248, 240, 0.8);
     transform: translateX(2px);
   }
 
   .sidebar-link.active {
-    background: linear-gradient(135deg, var(--color-primary-light) 0%, rgba(239, 246, 255, 0.9) 100%);
+    background: linear-gradient(135deg, var(--color-primary-light) 0%, rgba(239, 246, 255, 0.95) 100%);
     color: var(--color-primary);
     @apply font-medium;
     box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
