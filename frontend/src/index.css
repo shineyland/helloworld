@@ -4,7 +4,37 @@
   --color-primary: #2563eb;
   --color-primary-hover: #1d4ed8;
   --color-primary-light: #dbeafe;
+  --color-primary-dark: #1e40af;
   --color-accent: #3b82f6;
+  --background-image: none;
+}
+
+/* Custom background image layer */
+.app-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+  background-image: var(--background-image);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+/* When background image is set, make content areas slightly transparent */
+.has-background-image .card {
+  background-color: rgba(255, 255, 255, 0.95);
+}
+
+.has-background-image .sidebar-bg {
+  background-color: rgba(255, 255, 255, 0.95);
+}
+
+.has-background-image .main-content-bg {
+  background-color: transparent;
 }
 
 @layer base {
@@ -37,17 +67,18 @@
 
   .input {
     @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent;
-    --tw-ring-color: var(--color-primary);
   }
 
   .input:focus {
     --tw-ring-color: var(--color-primary);
+    border-color: var(--color-primary);
   }
 
   .card {
     @apply bg-white rounded-lg shadow-md p-6;
   }
 
+  /* Sidebar styles */
   .sidebar-link {
     @apply flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors;
   }
@@ -58,15 +89,89 @@
     @apply font-medium;
   }
 
+  .sidebar-link.active svg {
+    color: var(--color-primary);
+  }
+
+  /* Theme utility classes */
   .text-primary {
     color: var(--color-primary);
+  }
+
+  .text-primary-dark {
+    color: var(--color-primary-dark);
   }
 
   .bg-primary {
     background-color: var(--color-primary);
   }
 
+  .bg-primary-hover {
+    background-color: var(--color-primary-hover);
+  }
+
   .bg-primary-light {
     background-color: var(--color-primary-light);
+  }
+
+  .border-primary {
+    border-color: var(--color-primary);
+  }
+
+  .border-primary-light {
+    border-color: var(--color-primary-light);
+  }
+
+  .ring-primary {
+    --tw-ring-color: var(--color-primary);
+  }
+
+  /* Header with theme */
+  .header-themed {
+    background-color: var(--color-primary);
+    @apply text-white;
+  }
+
+  /* Logo text */
+  .logo-text {
+    color: var(--color-primary);
+  }
+
+  /* Loading spinner */
+  .spinner-primary {
+    border-color: var(--color-primary-light);
+    border-top-color: var(--color-primary);
+  }
+
+  /* Links */
+  a.link-primary {
+    color: var(--color-primary);
+  }
+
+  a.link-primary:hover {
+    color: var(--color-primary-hover);
+  }
+
+  /* Badge */
+  .badge-primary {
+    background-color: var(--color-primary-light);
+    color: var(--color-primary);
+  }
+
+  /* Tabs */
+  .tab-active {
+    background-color: var(--color-primary);
+    @apply text-white;
+  }
+
+  /* Progress bar */
+  .progress-primary {
+    background-color: var(--color-primary);
+  }
+
+  /* Checkbox/Radio when checked */
+  .checkbox-primary:checked {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
   }
 }

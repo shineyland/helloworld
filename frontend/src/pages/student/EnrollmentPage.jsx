@@ -153,6 +153,10 @@ const StudentEnrollmentPage = () => {
   const electivesRequirementMet = electivesEnrolled >= minimumElectives;
   const allRequirementsMet = coreRequirementsMet && electivesRequirementMet;
 
+  // Check if enrollment is complete (no more classes can be added)
+  const maxClasses = minimumCoreSubjects + minimumElectives; // 7 total
+  const enrollmentComplete = allRequirementsMet && totalEnrolled >= maxClasses;
+
   const getSubjectDisplayName = (subject) => {
     const names = {
       english: 'English',
@@ -176,13 +180,53 @@ const StudentEnrollmentPage = () => {
     return colors[subject] || 'bg-gray-50 text-gray-600 border-gray-200';
   };
 
-  // Check if a class's subject is already enrolled (for core subjects)
-  const isSubjectAlreadyEnrolled = (cls) => {
+  // Check if a class cannot be enrolled
+  const isEnrollmentDisabled = (cls) => {
+    // If enrollment is complete, disable all
+    if (enrollmentComplete) return true;
+
     const category = getSubjectCategory(cls.subject_code);
-    // Allow multiple electives
-    if (category === 'electives' || category === 'other') return false;
-    // For core subjects, check if already enrolled
+
+    // For electives, check if we already have 2
+    if (category === 'electives' || category === 'other') {
+      return electivesEnrolled >= minimumElectives;
+    }
+
+    // For core subjects, check if already enrolled in that subject
     return coveredSubjects[category] === true;
+  };
+
+  // Get reason why enrollment is disabled
+  const getDisabledReason = (cls) => {
+    if (enrollmentComplete) return 'Enrollment Complete';
+
+    const category = getSubjectCategory(cls.subject_code);
+
+    if (category === 'electives' || category === 'other') {
+      if (electivesEnrolled >= minimumElectives) return 'Electives Full';
+    } else if (coveredSubjects[category]) {
+      return `${getSubjectDisplayName(category)} Taken`;
+    }
+
+    return null;
+  };
+
+  // Check if class is recommended for a missing subject
+  const isRecommendedForMissing = (cls) => {
+    if (enrollmentComplete) return false;
+    const category = getSubjectCategory(cls.subject_code);
+
+    // For core subjects - recommend if that subject is missing and class is for student's grade
+    if (coreSubjects.includes(category) && !coveredSubjects[category]) {
+      return cls.is_recommended || cls.grade_level === studentGradeLevel;
+    }
+
+    // For electives - recommend if we still need electives
+    if ((category === 'electives' || category === 'other') && electivesEnrolled < minimumElectives) {
+      return cls.is_recommended || cls.grade_level === studentGradeLevel;
+    }
+
+    return false;
   };
 
   const getCategoryBorderColor = (subjectCode) => {
@@ -398,15 +442,30 @@ const StudentEnrollmentPage = () => {
                 No classes available for this filter
               </div>
             ) : (
-              filteredClasses.map((cls) => (
+              filteredClasses.map((cls) => {
+                const isHighlighted = isRecommendedForMissing(cls) && !isEnrollmentDisabled(cls);
+                return (
                 <div
                   key={cls.id}
-                  className={`card border-l-4 ${
-                    cls.is_advanced ? 'border-l-purple-500' :
-                    cls.is_recommended ? 'border-l-green-500' :
-                    getCategoryBorderColor(cls.subject_code)
+                  className={`card border-l-4 transition-all ${
+                    isHighlighted
+                      ? 'border-l-green-500 ring-2 ring-green-200 bg-green-50/50'
+                      : cls.is_advanced ? 'border-l-purple-500' :
+                        cls.is_recommended ? 'border-l-green-500' :
+                        getCategoryBorderColor(cls.subject_code)
                   }`}
                 >
+                  {/* Recommended Banner */}
+                  {isHighlighted && (
+                    <div className="flex items-center gap-2 mb-3 pb-3 border-b border-green-200">
+                      <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span className="text-sm font-medium text-green-700">
+                        Recommended - Fills your {getSubjectDisplayName(getSubjectCategory(cls.subject_code))} requirement
+                      </span>
+                    </div>
+                  )}
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 flex-wrap mb-2">
@@ -416,7 +475,12 @@ const StudentEnrollmentPage = () => {
                             {cls.subject_code}
                           </span>
                         )}
-                        {cls.is_recommended && (
+                        {isHighlighted && (
+                          <span className="px-2 py-0.5 bg-green-500 text-white rounded text-xs font-medium animate-pulse">
+                            Recommended
+                          </span>
+                        )}
+                        {!isHighlighted && cls.is_recommended && (
                           <span className="px-2 py-0.5 bg-green-100 text-green-800 rounded text-xs font-medium">
                             Recommended
                           </span>
@@ -487,26 +551,26 @@ const StudentEnrollmentPage = () => {
                     </div>
 
                     <div className="ml-4 flex flex-col items-end gap-1">
-                      {isSubjectAlreadyEnrolled(cls) && (
+                      {getDisabledReason(cls) && (
                         <span className="text-xs text-orange-600 font-medium">
-                          Already enrolled in {getSubjectDisplayName(getSubjectCategory(cls.subject_code))}
+                          {getDisabledReason(cls)}
                         </span>
                       )}
                       <button
                         onClick={() => handleEnroll(cls)}
-                        disabled={enrolling === cls.id || parseInt(cls.enrolled_count) >= cls.max_students || isSubjectAlreadyEnrolled(cls)}
+                        disabled={enrolling === cls.id || parseInt(cls.enrolled_count) >= cls.max_students || isEnrollmentDisabled(cls)}
                         className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                          parseInt(cls.enrolled_count) >= cls.max_students || isSubjectAlreadyEnrolled(cls)
+                          parseInt(cls.enrolled_count) >= cls.max_students || isEnrollmentDisabled(cls)
                             ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                             : 'bg-green-600 text-white hover:bg-green-700'
                         }`}
                       >
-                        {enrolling === cls.id ? 'Enrolling...' : isSubjectAlreadyEnrolled(cls) ? 'Subject Taken' : 'Enroll'}
+                        {enrolling === cls.id ? 'Enrolling...' : getDisabledReason(cls) || 'Enroll'}
                       </button>
                     </div>
                   </div>
                 </div>
-              ))
+              );})
             )}
           </div>
         </>

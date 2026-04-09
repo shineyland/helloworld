@@ -89,6 +89,11 @@ export const ThemeProvider = ({ children }) => {
     return saved || 'blue';
   });
 
+  const [backgroundImage, setBackgroundImage] = useState(() => {
+    const saved = localStorage.getItem('background-image');
+    return saved || '';
+  });
+
   useEffect(() => {
     localStorage.setItem('app-theme', theme);
     applyTheme(theme);
@@ -97,6 +102,11 @@ export const ThemeProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem('avatar-color', avatarColor);
   }, [avatarColor]);
+
+  useEffect(() => {
+    localStorage.setItem('background-image', backgroundImage);
+    applyBackgroundImage(backgroundImage);
+  }, [backgroundImage]);
 
   const applyTheme = (themeName) => {
     const colors = themeColors[themeName];
@@ -109,6 +119,15 @@ export const ThemeProvider = ({ children }) => {
     root.style.setProperty('--color-accent', colors.accent);
   };
 
+  const applyBackgroundImage = (imageUrl) => {
+    const root = document.documentElement;
+    if (imageUrl) {
+      root.style.setProperty('--background-image', `url(${imageUrl})`);
+    } else {
+      root.style.removeProperty('--background-image');
+    }
+  };
+
   const value = {
     theme,
     setTheme,
@@ -116,6 +135,8 @@ export const ThemeProvider = ({ children }) => {
     avatarColor,
     setAvatarColor,
     avatarColors: avatarColors[avatarColor],
+    backgroundImage,
+    setBackgroundImage,
   };
 
   return (

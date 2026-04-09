@@ -1,15 +1,30 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { useTheme } from '../../context/ThemeContext';
+import { useTheme, avatarColors as allAvatarColors } from '../../context/ThemeContext';
 import AccountModal from '../common/AccountModal';
 
 const DashboardLayout = () => {
   const { user, logout } = useAuth();
   const location = useLocation();
-  const { avatarColors } = useTheme();
+  const { avatarColors, avatarColor, setAvatarColor, backgroundImage } = useTheme();
   const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
   const [isSignOutModalOpen, setIsSignOutModalOpen] = useState(false);
+  const [isAvatarMenuOpen, setIsAvatarMenuOpen] = useState(false);
+  const [showColorPicker, setShowColorPicker] = useState(false);
+  const avatarMenuRef = useRef(null);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (avatarMenuRef.current && !avatarMenuRef.current.contains(event.target)) {
+        setIsAvatarMenuOpen(false);
+        setShowColorPicker(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const getNavLinks = () => {
     switch (user?.role) {
@@ -44,13 +59,16 @@ const DashboardLayout = () => {
   const navLinks = getNavLinks();
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className={`min-h-screen ${backgroundImage ? 'has-background-image' : 'bg-gray-100'}`}>
+      {/* Background Image Layer */}
+      {backgroundImage && <div className="app-background" />}
+
       {/* Sidebar */}
-      <aside className="fixed inset-y-0 left-0 w-64 bg-white shadow-lg">
+      <aside className="fixed inset-y-0 left-0 w-64 bg-white shadow-lg sidebar-bg">
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="h-16 flex items-center px-6 border-b border-gray-200">
-            <h1 className="text-xl font-bold text-primary-600">School MS</h1>
+            <h1 className="text-xl font-bold logo-text">School MS</h1>
           </div>
 
           {/* Navigation */}
@@ -72,42 +90,116 @@ const DashboardLayout = () => {
           </nav>
 
           {/* User Info */}
-          <div className="p-4 border-t border-gray-200">
-            <button
-              onClick={() => setIsAccountModalOpen(true)}
-              className="w-full flex items-center gap-3 mb-4 p-2 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
-            >
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${avatarColors.bg}`}>
-                <span className={`font-medium ${avatarColors.text}`}>
-                  {user?.name?.charAt(0) || 'U'}
-                </span>
-              </div>
-              <div className="flex-1 min-w-0 text-left">
-                <p className="text-sm font-medium text-gray-900 truncate">
-                  {user?.name}
-                </p>
-                <p className="text-xs text-gray-500 capitalize">
-                  My Account
-                </p>
-              </div>
-              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-            <button
-              onClick={() => setIsSignOutModalOpen(true)}
-              className="w-full btn btn-secondary text-sm"
-            >
-              Sign Out
-            </button>
+          <div className="p-4 border-t border-gray-200" ref={avatarMenuRef}>
+            <div className="relative">
+              <button
+                onClick={() => setIsAvatarMenuOpen(!isAvatarMenuOpen)}
+                className="w-full flex items-center gap-3 mb-4 p-2 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+              >
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${avatarColors.bg}`}>
+                  <span className={`font-medium ${avatarColors.text}`}>
+                    {user?.name?.charAt(0) || 'U'}
+                  </span>
+                </div>
+                <div className="flex-1 min-w-0 text-left">
+                  <p className="text-sm font-medium text-gray-900 truncate">
+                    {user?.name}
+                  </p>
+                  <p className="text-xs text-gray-500 capitalize">
+                    {user?.role}
+                  </p>
+                </div>
+                <svg className={`w-4 h-4 text-gray-400 transition-transform ${isAvatarMenuOpen ? 'rotate-90' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+
+              {/* Avatar Dropdown Menu */}
+              {isAvatarMenuOpen && (
+                <div className="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden z-50">
+                  {/* My Account */}
+                  <button
+                    onClick={() => {
+                      setIsAvatarMenuOpen(false);
+                      setIsAccountModalOpen(true);
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
+                  >
+                    <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    <span className="text-sm text-gray-700">My Account</span>
+                  </button>
+
+                  {/* Change Avatar Color */}
+                  <div className="border-t border-gray-100">
+                    <button
+                      onClick={() => setShowColorPicker(!showColorPicker)}
+                      className="w-full flex items-center justify-between gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
+                    >
+                      <div className="flex items-center gap-3">
+                        <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                        </svg>
+                        <span className="text-sm text-gray-700">Avatar Color</span>
+                      </div>
+                      <div className={`w-5 h-5 rounded-full ${avatarColors.bg}`}></div>
+                    </button>
+
+                    {/* Color Picker */}
+                    {showColorPicker && (
+                      <div className="px-4 py-3 bg-gray-50 border-t border-gray-100">
+                        <p className="text-xs text-gray-500 mb-2">Choose a color:</p>
+                        <div className="grid grid-cols-6 gap-2">
+                          {Object.keys(allAvatarColors).map((colorKey) => {
+                            const colors = allAvatarColors[colorKey];
+                            const isSelected = avatarColor === colorKey;
+                            return (
+                              <button
+                                key={colorKey}
+                                onClick={() => {
+                                  setAvatarColor(colorKey);
+                                }}
+                                className={`w-7 h-7 rounded-full flex items-center justify-center transition-transform hover:scale-110 ${colors.bg} ${isSelected ? 'ring-2 ring-offset-1 ring-gray-400' : ''}`}
+                                title={colorKey}
+                              >
+                                {isSelected && (
+                                  <svg className={`w-4 h-4 ${colors.text}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                  </svg>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Sign Out */}
+                  <button
+                    onClick={() => {
+                      setIsAvatarMenuOpen(false);
+                      setIsSignOutModalOpen(true);
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-red-50 transition-colors text-left border-t border-gray-100"
+                  >
+                    <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    <span className="text-sm text-red-600">Sign Out</span>
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </aside>
 
       {/* Main Content */}
-      <main className="ml-64 min-h-screen">
-        <header className="h-16 bg-white shadow-sm flex items-center px-6">
-          <h2 className="text-lg font-semibold text-gray-800">
+      <main className="ml-64 min-h-screen main-content-bg">
+        <header className="h-16 bg-primary shadow-sm flex items-center px-6">
+          <h2 className="text-lg font-semibold text-white">
             {navLinks.find(l => l.path === location.pathname)?.label || 'Dashboard'}
           </h2>
         </header>

@@ -354,11 +354,7 @@ export const getStudentSchedule = async (req, res, next) => {
         c.name,
         c.room_number,
         c.schedule,
-        c.period_number,
-        c.start_time,
-        c.end_time,
         c.grade_level,
-        c.is_advanced,
         s.name as subject_name,
         s.code as subject_code,
         u.first_name as teacher_first_name,
@@ -366,10 +362,11 @@ export const getStudentSchedule = async (req, res, next) => {
       FROM class_students cs
       JOIN classes c ON cs.class_id = c.id
       LEFT JOIN subjects s ON c.subject_id = s.id
-      LEFT JOIN teachers t ON c.teacher_id = t.id
+      LEFT JOIN class_teachers ct ON c.id = ct.class_id AND ct.is_primary = true
+      LEFT JOIN teachers t ON ct.teacher_id = t.id
       LEFT JOIN users u ON t.user_id = u.id
       WHERE cs.student_id = $1 AND cs.status = 'active' AND c.is_active = true
-      ORDER BY c.period_number, c.name
+      ORDER BY c.name
     `, [studentResult.rows[0].id]);
 
     res.json({
